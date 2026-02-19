@@ -1,0 +1,434 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Materias Correlativas - Medicina (UNCo)</title>
+
+  <!-- Fuentes -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&family=Shadows+Into+Light&display=swap" rel="stylesheet">
+
+  <style>
+    :root{
+      --aprobada:#4b6043;
+      --habilitada:#a6b98b;
+      --bloqueada:#E4f1d7;
+      --cursando:#658354;
+
+      --card-radius:12px;
+      --gap:12px;
+      --shadow: 0 6px 18px rgba(24,24,24,0.08);
+
+      --ink:#0f2522;          /* color principal de texto */
+      --ink-soft:#203a34;
+      --glass:rgba(255,255,255,.68);
+      --glass-border:rgba(18,35,50,.10);
+    }
+
+    /* --- Fondo con imagen + overlay global --- */
+    body{
+      margin:0;
+      position:relative;
+      background:
+        linear-gradient(180deg, rgba(255,255,255,.12), rgba(255,255,255,.3)),
+        url('https://i.pinimg.com/736x/7a/82/12/7a82124299edd13937dd5b15432d3909.jpg');
+      background-size: cover;
+      background-attachment: fixed;
+      background-position: center;
+      padding: 20px;
+      color: var(--ink);
+      font-family: 'Poppins', sans-serif;
+      font-weight: 400;
+      min-height: 100vh;
+    }
+
+    /* --- Barra superior en degradado para mejorar legibilidad --- */
+    .top-fade{
+      position: fixed;
+      inset: 0 0 auto 0;
+      height: 160px;
+      background: linear-gradient(
+        to bottom,
+        rgba(255,255,255,.92) 0%,
+        rgba(255,255,255,.70) 55%,
+        rgba(255,255,255,0) 100%
+      );
+      pointer-events: none;
+      z-index: 0;
+    }
+
+    /* --- Header glass sticky --- */
+    header{
+      position: sticky;
+      top: 10px;
+      z-index: 2;
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap:12px;
+      flex-wrap:wrap;
+
+      background: var(--glass);
+      backdrop-filter: blur(8px);
+      -webkit-backdrop-filter: blur(8px);
+      border:1px solid var(--glass-border);
+      border-radius: 14px;
+      padding: 12px 14px;
+      box-shadow: var(--shadow);
+    }
+
+    h1{
+      font-size: 2rem;
+      margin: 0;
+      font-family: 'Shadows Into Light', cursive;
+      font-weight: 600;
+      text-align: center;
+      color: var(--ink-soft);
+    }
+
+    .controls{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+
+    button{
+      background: var(--ink);
+      color:#C7DDB5;
+      border:none;
+      padding:10px 12px;
+      border-radius:10px;
+      cursor:pointer;
+      box-shadow:var(--shadow);
+      transition: all 0.2s ease;
+    }
+    button:hover{
+      transform: translateY(-2px);
+      box-shadow: 0 8px 20px rgba(24,24,24,0.12);
+    }
+    button.secondary{
+      background:transparent;
+      color:var(--ink);
+      border:1px solid rgba(18,35,50,0.18);
+    }
+
+    .small{font-size:0.85rem;color:var(--ink-soft);font-weight: 500}
+
+    .legend{display:flex;gap:10px;flex-wrap:wrap;align-items:center}
+    .legend .item{display:flex;gap:8px;align-items:center;font-size:.9rem}
+    .swatch{width:16px;height:12px;border-radius:4px;display:inline-block;box-shadow: inset 0 0 0 1px rgba(0,0,0,.06)}
+
+    /* --- Grid y tarjetas --- */
+    .grid{display:grid;gap:var(--gap);margin-top:18px}
+    @media(min-width:1100px){.grid{grid-template-columns:repeat(4,1fr)}}
+    @media(min-width:720px) and (max-width:1099px){.grid{grid-template-columns:repeat(2,1fr)}}
+    @media(max-width:719px){.grid{grid-template-columns:1fr}}
+
+    .year-col{
+      background:rgba(255,255,255,0.85);
+      padding:12px;
+      border-radius:14px;
+      box-shadow:var(--shadow);
+      backdrop-filter: blur(2px);
+      border:1px solid var(--glass-border);
+    }
+    .year-title{font-weight:700;margin:0 0 8px 0}
+
+    .subject{
+      padding:10px;border-radius:var(--card-radius);margin-bottom:8px;
+      display:flex;align-items:center;justify-content:space-between;gap:8px;
+      cursor:pointer;
+      transition:transform .18s ease, box-shadow .18s ease, background-color .35s ease,color .35s ease;
+      text-decoration:none;
+      position: relative;
+      overflow: hidden;
+    }
+    .subject:hover{
+      transform: translateY(-2px);
+      box-shadow: 0 8px 20px rgba(24,24,24,0.12);
+    }
+    .subject:active{transform:translateY(1px)}
+    .subject.locked{background:var(--bloqueada);color:#073b30;}
+    .subject.unlocked{background:var(--habilitada);color:#2a2119;}
+    .subject.cursando{background:var(--cursando);color:#183b12;font-style:italic;}
+    .subject.aprobada{background:var(--aprobada);color:#fff;font-style:italic;text-decoration:line-through}
+    .subject .meta{font-size:0.75rem;opacity:0.85}
+
+    .toast{
+      position:fixed;left:50%;transform:translateX(-50%);bottom:24px;
+      background:rgba(18,18,18,0.88);color:#fff;padding:8px 14px;border-radius:8px;display:none;
+      z-index: 10;
+      backdrop-filter: blur(4px);
+    }
+
+    footer{margin-top:14px;font-size:0.9rem;color:var(--ink-soft);text-shadow: 0 1px 0 rgba(255,255,255,.3)}
+    
+    /* Indicador de estado con animación */
+    .status-indicator {
+      position: absolute;
+      top: 0;
+      right: 0;
+      width: 8px;
+      height: 100%;
+      transition: all 0.3s ease;
+    }
+    .subject.aprobada .status-indicator { background: rgba(255,255,255,0.3); }
+    .subject.cursando .status-indicator { background: rgba(255,255,255,0.5); }
+  </style>
+</head>
+<body>
+  <!-- Degradado superior para legibilidad -->
+  <div class="top-fade"></div>
+
+  <header>
+    <div>
+      <h1>Medicina (UNComa)</h1>
+      <div class="small">Haz clic en una materia desbloqueada para marcarla como "Cursando" → clic nuevamente para marcarla como aprobada. Las materias bloqueadas no responden.</div>
+    </div>
+    <div class="controls">
+      <div class="legend">
+        <div class="item"><span class="swatch" style="background:var(--aprobada)"></span> Aprobada</div>
+        <div class="item"><span class="swatch" style="background:var(--cursando)"></span> Cursando</div>
+        <div class="item"><span class="swatch" style="background:var(--habilitada)"></span> Habilitada</div>
+        <div class="item"><span class="swatch" style="background:var(--bloqueada)"></span> Bloqueada</div>
+      </div>
+      <button id="resetBtn" title="Reiniciar progreso">Reiniciar</button>
+      <a href="/planificador.html" class="planificador-link">
+        <button class="secondary" title="Abrir planificador de estudios">Planificador</button>
+      </a>
+    </div>
+  </header>
+
+  <main id="mainGrid" class="grid"></main>
+  <div class="toast" id="toast"></div>
+  <footer>
+    <div class="info">Datos importados de la Ordenanza N° 1483. Créditos: Lighu.exe y Kevi (Sion) uwu</div>
+  </footer>
+
+  <script>
+    const subjects = [
+      {id:'IBFCa', name:'IBFCa (Ciclo Introductorio)', year:'1° Año', prereqs:[], state:'pendiente'},
+      {id:'IBH', name:'IBH (Ciclo Introductorio)', year:'1° Año', prereqs:[], state:'pendiente'},
+      {id:'IEM', name:'IEM (Ciclo Introductorio)', year:'1° Año', prereqs:[], state:'pendiente'},
+      {id:'MYS', name:'MYS (Ciclo Introductorio)', year:'1° Año', prereqs:[], state:'pendiente'},
+      {id:'IQSB', name:'IQSB (Ciclo Introductorio)', year:'1° Año', prereqs:[], state:'pendiente'},
+      {id:'TallerA', name:'Taller A', year:'2° Año', prereqs:['IBFCa','IBH','IEM','MYS','IQSB'], state:'pendiente'},
+      {id:'Anatomia', name:'Anatomía', year:'2° Año', prereqs:['IBFCa','IBH','IEM','MYS','IQSB'], state:'pendiente'},
+      {id:'Histologia', name:'Histología', year:'2° Año', prereqs:['IBFCa','IBH','IEM','MYS','IQSB'], state:'pendiente'},
+      {id:'Bioquimica', name:'Bioquímica', year:'2° Año', prereqs:['IBFCa','IBH','IEM','MYS','IQSB'], state:'pendiente'},
+      {id:'APSI', name:'APS I', year:'2° Año', prereqs:['IBFCa','IBH','IEM','MYS','IQSB'], state:'pendiente'},
+      {id:'Fisiologia', name:'Fisiología', year:'2° Año', prereqs:['Bioquimica'], state:'pendiente'},
+      {id:'Bioetica', name:'Bioética', year:'3° Año', prereqs:['IBFCa','IBH','IEM','MYS','IQSB'], state:'pendiente'},
+      {id:'Ingles', name:'Inglés', year:'3° Año', prereqs:['IBFCa','IBH','IEM','MYS','IQSB'], state:'pendiente'},
+      {id:'Patologia', name:'Patología', year:'3° Año', prereqs:['Anatomia','Histologia'], state:'pendiente'},
+      {id:'RMP', name:'RMP', year:'3° Año', prereqs:['APSI'], state:'pendiente'},
+      {id:'Microbiologia', name:'Microbiología', year:'3° Año', prereqs:['Anatomia','Histologia','Bioquimica'], state:'pendiente'},
+      {id:'APSII', name:'APS II', year:'3° Año', prereqs:['APSI'], state:'pendiente'},
+      {id:'TallerB', name:'Taller B', year:'3° Año', prereqs:['TallerA'], state:'pendiente'},
+      {id:'MedicinaI', name:'Medicina I', year:'4° Año', prereqs:['TallerA','Anatomia','Histologia','Bioquimica','APSI','Fisiologia','Bioetica','Ingles','Patologia','RMP','Microbiologia','APSII','TallerB'], state:'pendiente'},
+      {id:'Farmacologia', name:'Farmacología', year:'4° Año', prereqs:['TallerA','Anatomia','Histologia','Bioquimica','APSI','Fisiologia','Bioetica','Ingles','Patologia','RMP','Microbiologia','APSII','TallerB'], state:'pendiente'},
+      {id:'TallerC', name:'Taller C', year:'4° Año', prereqs:['TallerA','Anatomia','Histologia','Bioquimica','APSI','Fisiologia','Bioetica','Ingles','Patologia','RMP','Microbiologia','APSII','TallerB'], state:'pendiente'},
+      {id:'FarmacologiaEsp', name:'Farmacología Especial', year:'5° Año', prereqs:['Farmacologia'], state:'pendiente'},
+      {id:'MedYCirugia', name:'Medicina y Cirugía', year:'5° Año', prereqs:['MedicinaI','Farmacologia','TallerC'], state:'pendiente'},
+      {id:'Psiquiatria', name:'Psiquiatría', year:'5° Año', prereqs:['MedicinaI','Farmacologia','TallerC'], state:'pendiente'},
+      {id:'MedLegal', name:'Medicina Legal', year:'6° Año', prereqs:['MedicinaI','Farmacologia','TallerC'], state:'pendiente'},
+      {id:'Ginecologia', name:'Ginecología y Obstetricia', year:'6° Año', prereqs:['MedicinaI','Farmacologia','TallerC'], state:'pendiente'},
+      {id:'MedInfantil', name:'Medicina Infantil', year:'6° Año', prereqs:['MedicinaI','Farmacologia','TallerC'], state:'pendiente'},
+      {id:'PFO', name:'PFO (Ciclo de Síntesis)', year:'7° Año', prereqs:['MedicinaI','Farmacologia','TallerC','MedYCirugia','Psiquiatria','MedLegal','Ginecologia','MedInfantil'], state:'pendiente'}
+    ];
+
+    const STATES = {LOCKED:'locked',UNLOCKED:'unlocked',CURSANDO:'cursando',APROBADA:'aprobada'};
+    const storageKey = 'malla_uncomahue_v1';
+    const saved = JSON.parse(localStorage.getItem(storageKey) || 'null');
+    const subjMap = {};
+
+    // Inicializar mapa de materias
+    subjects.forEach(s=>{
+      subjMap[s.id] = Object.assign({}, s);
+      if(saved && saved[s.id]) { 
+        subjMap[s.id].state = saved[s.id]; 
+      } else {
+        const token = (s.state||'pendiente').toLowerCase();
+        if(token.includes('aprob')) subjMap[s.id].state = STATES.APROBADA;
+        else if(token.includes('curs')) subjMap[s.id].state = STATES.CURSANDO;
+        else subjMap[s.id].state = STATES.LOCKED;
+      }
+    });
+
+    // Calcular estados de bloqueo
+    function computeLockedStates(){
+      let changed = false;
+      subjects.forEach(s=>{
+        const curr = subjMap[s.id];
+        if(curr.state === STATES.APROBADA) return;
+        const prereqs = curr.prereqs || [];
+        let allApproved = true;
+        for(const p of prereqs){
+          const ps = subjMap[p];
+          if(!ps || ps.state !== STATES.APROBADA){ 
+            allApproved = false; 
+            break; 
+          }
+        }
+        const newState = allApproved ? (curr.state === STATES.CURSANDO ? STATES.CURSANDO : STATES.UNLOCKED) : STATES.LOCKED;
+        if(newState !== curr.state){ 
+          curr.state = newState; 
+          changed = true; 
+        }
+      });
+      return changed;
+    }
+
+    // Estabilizar estados (resolver dependencias)
+    function stabilize(){
+      let iter = 0;
+      while(computeLockedStates() && iter < 20) iter++;
+    }
+
+    stabilize();
+
+    const years = [...new Set(subjects.map(s=>s.year))];
+    const main = document.getElementById('mainGrid');
+
+    // Renderizar la interfaz
+    function render(){
+      main.innerHTML = '';
+      years.forEach(year=>{
+        const col = document.createElement('section');
+        col.className = 'year-col';
+        const title = document.createElement('div');
+        title.className = 'year-title';
+        title.textContent = year;
+        col.appendChild(title);
+
+        subjects.filter(s=>s.year===year).forEach(s=>{
+          const data = subjMap[s.id];
+          // Mostrar solo el nombre sin paréntesis
+          const displayName = s.name.replace(/\s*\(.*\)/, '');
+          
+          const div = document.createElement('div');
+          div.className = 'subject ' + data.state;
+          div.dataset.id = s.id;
+          div.innerHTML = `
+            <div><strong>${displayName}</strong></div>
+            <div class="status-indicator"></div>
+          `;
+          div.addEventListener('click', onSubjectClick);
+          col.appendChild(div);
+        });
+
+        main.appendChild(col);
+      });
+      save();
+    }
+
+    // Manejar clic en materia
+    function onSubjectClick(e){
+      const id = e.currentTarget.dataset.id;
+      const s = subjMap[id];
+      
+      if(s.state === STATES.LOCKED){ 
+        // Obtener materias que faltan aprobar para desbloquear
+        const prereqsFaltantes = s.prereqs.filter(prereq => 
+            !subjMap[prereq] || subjMap[prereq].state !== STATES.APROBADA
+        );
+        
+        if (prereqsFaltantes.length > 0) {
+            const nombresFaltantes = prereqsFaltantes.map(prereqId => {
+                const materia = subjects.find(subj => subj.id === prereqId);
+                return materia ? materia.name.replace(/\s*\(.*\)/, '') : prereqId;
+            });
+            showToast(`Materia bloqueada. Faltan aprobar: ${nombresFaltantes.join(', ')}`);
+        } else {
+            showToast('Materia bloqueada: faltan correlativas.');
+        }
+        return; 
+    }
+      
+      // Determinar el próximo estado
+      let nextState;
+      if(s.state === STATES.UNLOCKED) {
+        nextState = STATES.CURSANDO;
+      } else if(s.state === STATES.CURSANDO) {
+        nextState = STATES.APROBADA;
+      } else if(s.state === STATES.APROBADA) {
+        nextState = STATES.UNLOCKED;
+      }
+      
+      // Verificación específica para Bioética cuando intenta pasar a APROBADA
+      if (s.id === 'Bioetica' && nextState === STATES.APROBADA) {
+        if (!subjMap['TallerA'] || subjMap['TallerA'].state !== STATES.APROBADA) {
+          showToast('Para aprobar Bioética necesitás tener aprobada Taller A.');
+          return;
+        }
+      }
+      
+      // Verificación específica para APS II cuando intenta pasar a CURSANDO
+      if (s.id === 'APSII' && nextState === STATES.CURSANDO) {
+        if (!subjMap['RMP'] || subjMap['RMP'].state === STATES.LOCKED || subjMap['RMP'].state === STATES.UNLOCKED) {
+          showToast('Para cursar APS II necesitás tener cursada RMP (debe estar en estado Cursando o Aprobada).');
+          return;
+        }
+      }
+      
+      // Verificación específica para APS II cuando intenta pasar a APROBADA
+      if (s.id === 'APSII' && nextState === STATES.APROBADA) {
+        if (!subjMap['RMP'] || subjMap['RMP'].state !== STATES.APROBADA) {
+          showToast('Para aprobar APS II necesitás tener aprobada RMP.');
+          return;
+        }
+        if (!subjMap['TallerA'] || subjMap['TallerA'].state !== STATES.APROBADA) {
+          showToast('Para aprobar APS II necesitás tener aprobada Taller A.');
+          return;
+        }
+      }
+      
+      // Aplicar el cambio de estado
+      s.state = nextState;
+      
+      stabilize();
+      render();
+    }
+
+    // Guardar progreso en localStorage
+    function save(){
+      const out = {};
+      for(const k in subjMap) out[k] = subjMap[k].state;
+      localStorage.setItem(storageKey, JSON.stringify(out));
+    }
+
+    // Reiniciar todo el progreso
+    function resetAll(){
+      if(!confirm('¿Reiniciar todo el progreso? Esto restaurará los estados iniciales.')) return;
+      localStorage.removeItem(storageKey);
+      subjects.forEach(s=>{
+        const token = (s.state||'pendiente').toLowerCase();
+        if(token.includes('aprob')) subjMap[s.id].state = STATES.APROBADA;
+        else if(token.includes('curs')) subjMap[s.id].state = STATES.CURSANDO;
+        else subjMap[s.id].state = STATES.LOCKED;
+      });
+      stabilize();
+      render();
+    }
+
+    // Mostrar notificación toast
+    function showToast(msg, ms=1800){
+      const t = document.getElementById('toast');
+      t.textContent = msg; 
+      t.style.display='block';
+      setTimeout(()=>{ t.style.display='none'; }, ms);
+    }
+
+    // Configurar eventos
+    document.getElementById('resetBtn').addEventListener('click', resetAll);
+
+    // Permitir navegación con teclado
+    document.addEventListener('keydown', (e)=>{
+      if(e.key==='Enter' && document.activeElement && document.activeElement.dataset && document.activeElement.dataset.id){
+        document.activeElement.click();
+      }
+    });
+
+    // Renderizar inicialmente
+    render();
+  </script>
+</body>
+</html>
