@@ -1,9 +1,8 @@
 <html lang="es">
 <head>
   <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>Medicina UNCo · Malla + Planificador</title>
-  <!-- Fuentes -->
+  <meta name="viewport" content="width=device-width,initial-scale=1" 
+
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&family=Shadows+Into+Light&display=swap" rel="stylesheet">
@@ -148,7 +147,6 @@
       display: block;
     }
 
-    /* --- Malla grid --- */
     .grid{display:grid;gap:var(--gap);}
     @media(min-width:1100px){.grid{grid-template-columns:repeat(4,1fr)}}
     @media(min-width:720px) and (max-width:1099px){.grid{grid-template-columns:repeat(2,1fr)}}
@@ -493,7 +491,6 @@
     <main id="mainGrid" class="grid"></main>
   </div>
 
-  <!-- Vista Planificador -->
   <div id="planificadorView" class="view">
     <div class="planificador-container">
       <div style="margin-bottom: 15px;">
@@ -534,7 +531,7 @@
 
   <script>
     (function() {
-      // ---------- DATOS COMPARTIDOS ----------
+
       const subjects = [
         {id:'IBFCa', name:'IBFCa (Ciclo Introductorio)', year:'1° Año', prereqs:[], state:'pendiente'},
         {id:'IBH', name:'IBH (Ciclo Introductorio)', year:'1° Año', prereqs:[], state:'pendiente'},
@@ -578,7 +575,6 @@
         'repaso3': 'Repaso 3'
       };
 
-      // ---------- FUNCIONES COMUNES ----------
       function showToast(msg, ms = 1800) {
         const t = document.getElementById('toast');
         t.textContent = msg;
@@ -586,7 +582,6 @@
         setTimeout(() => { t.style.display = 'none'; }, ms);
       }
 
-      // ---------- LÓGICA DE MALLA (estados de materias) ----------
       const saved = JSON.parse(localStorage.getItem(storageKey) || 'null');
       const subjMap = {};
 
@@ -637,7 +632,6 @@
         localStorage.setItem(storageKey, JSON.stringify(out));
       }
 
-      // ---------- RENDERIZADO DE MALLA ----------
       const years = [...new Set(subjects.map(s => s.year))];
       const mainGrid = document.getElementById('mainGrid');
 
@@ -665,7 +659,7 @@
           mainGrid.appendChild(col);
         });
         saveMalla();
-        // Actualizar el select del planificador con los nuevos estados
+  
         poblarSelectMaterias();
       }
 
@@ -692,7 +686,6 @@
         else if (s.state === STATES.CURSANDO) nextState = STATES.APROBADA;
         else if (s.state === STATES.APROBADA) nextState = STATES.UNLOCKED;
 
-        // Validaciones especiales
         if (s.id === 'Bioetica' && nextState === STATES.APROBADA) {
           if (!subjMap['TallerA'] || subjMap['TallerA'].state !== STATES.APROBADA) {
             showToast('Para aprobar Bioética necesitás tener aprobada Taller A.');
@@ -734,9 +727,7 @@
         renderMalla();
       });
 
-      // ---------- LÓGICA DEL PLANIFICADOR ----------
       function obtenerEstadoMaterias() {
-        // Reconstruye subjMap desde localStorage (igual que arriba, pero lo usamos en planner)
         const savedNow = JSON.parse(localStorage.getItem(storageKey) || '{}');
         const map = {};
         subjects.forEach(s => {
@@ -775,7 +766,6 @@
         });
       }
 
-      // Funciones del planificador (copiadas de planificador.html)
       function puedeMarcarEtapa(tema, etapaIndex) {
         if (etapaIndex === 0) return true;
         for (let i = 0; i < etapaIndex; i++) {
@@ -1024,7 +1014,7 @@
         showToast('Tema agregado');
       }
 
-      // Inicializar planificador (eventos del select y botones)
+
       function initPlanificador() {
         const select = document.getElementById('materiaSelect');
         const planificadorContenido = document.getElementById('planificadorContenido');
@@ -1128,7 +1118,6 @@
         });
       }
 
-      // ---------- CAMBIO DE VISTA ----------
       const mallaView = document.getElementById('mallaView');
       const planificadorView = document.getElementById('planificadorView');
       const viewMallaBtn = document.getElementById('viewMallaBtn');
@@ -1148,8 +1137,8 @@
           viewMallaBtn.classList.remove('active');
           viewPlanificadorBtn.classList.add('active');
           viewDescription.textContent = 'Planificador · gestiona temas y subtemas por materia';
-          poblarSelectMaterias(); // refrescar opciones
-          // Si hay una materia seleccionada previamente, recargar su contenido
+          poblarSelectMaterias();
+          
           const select = document.getElementById('materiaSelect');
           if (select.value) {
             const event = new Event('change');
@@ -1161,12 +1150,10 @@
       viewMallaBtn.addEventListener('click', () => setView('malla'));
       viewPlanificadorBtn.addEventListener('click', () => setView('planificador'));
 
-      // ---------- INICIALIZACIÓN ----------
       renderMalla();
       poblarSelectMaterias();
       initPlanificador();
 
-      // Teclado para malla (opcional)
       document.addEventListener('keydown', (e) => {
         if (e.key === 'Enter' && document.activeElement && document.activeElement.dataset && document.activeElement.dataset.id) {
           document.activeElement.click();
