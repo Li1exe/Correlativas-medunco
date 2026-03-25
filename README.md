@@ -333,8 +333,8 @@
     }
     
     .subtema-container.abierto {
-      max-height: 500px;
-      padding: 15px;
+      max-height: 50000px;
+      padding: 10px;
     }
     
     .subtema-header {
