@@ -332,9 +332,12 @@
       transition: max-height 0.3s ease, padding 0.3s ease;
     }
     
-    .subtema-container.abierto {
-      max-height: 50000px;
-      padding: 10px;
+.subtema-container.abierto {
+  max-height: 8000px;
+  padding: 10px;
+  overflow: visible;
+}
+
     }
     
     .subtema-header {
