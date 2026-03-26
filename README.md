@@ -838,6 +838,20 @@
             const todasCompletadas = progreso.completadas === etapas.length;
             const fila = document.createElement('tr');
             fila.className = 'tema-row';
+            
+            let checkboxesTemaHTML = '';
+            etapas.forEach((etapa, i) => {
+              const puedeMarcar = puedeMarcarEtapa(tema, i);
+              const estaCompletada = tema[etapa];
+              checkboxesTemaHTML += '<label class="check-item-horizontal ' + (estaCompletada ? 'completado' : '') + ' ' + (!puedeMarcar ? 'bloqueado' : '') + '">' +
+                '<div class="checkbox-container">' +
+                  '<input type="checkbox" data-tema-index="' + index + '" data-etapa="' + etapa + '" ' + (estaCompletada ? 'checked' : '') + ' ' + (!puedeMarcar ? 'disabled' : '') + '>' +
+                  '<span class="checkmark"></span>' +
+                '</div>' +
+                '<span class="check-label-horizontal">' + etapasNombres[etapa] + '</span>' +
+              '</label>';
+            });
+
             fila.innerHTML = `
               <td>
                 <div style="display: flex; align-items: center;">
@@ -848,62 +862,64 @@
               </td>
               <td>
                 <div class="checklist-horizontal">
-                  ${etapas.map((etapa, i) => {
-                    const puedeMarcar = puedeMarcarEtapa(tema, i);
-                    const estaCompletada = tema[etapa];
-                    return \`<label class="check-item-horizontal \${estaCompletada ? 'completado' : ''} \${!puedeMarcar ? 'bloqueado' : ''}">
-                      <div class="checkbox-container">
-                        <input type="checkbox" data-tema-index="\${index}" data-etapa="\${etapa}" \${estaCompletada ? 'checked' : ''} \${!puedeMarcar ? 'disabled' : ''}>
-                        <span class="checkmark"></span>
-                      </div>
-                      <span class="check-label-horizontal">\${etapasNombres[etapa]}</span>
-                    </label>\`;
-                  }).join('')}
+                  ${checkboxesTemaHTML}
                 </div>
               </td>
-              <td><div class="acciones-tema"><button class="eliminar" data-tema-index="\${index}">Eliminar</button></div></td>
+              <td><div class="acciones-tema"><button class="eliminar" data-tema-index="${index}">Eliminar</button></div></td>
             `;
 
             const filaSubtema = document.createElement('tr');
+            
+            let subtemasHTML = '';
+            if (tema.subtemas) {
+              tema.subtemas.forEach((subtema, subtemaIndex) => {
+                let checkboxesSubtemaHTML = '';
+                etapas.forEach((etapa, i) => {
+                  const puedeMarcar = puedeMarcarEtapa(subtema, i);
+                  const estaCompletada = subtema[etapa] || false;
+                  checkboxesSubtemaHTML += '<label class="check-item-horizontal ' + (estaCompletada ? 'completado' : '') + ' ' + (!puedeMarcar ? 'bloqueado' : '') + '">' +
+                    '<div class="checkbox-container">' +
+                      '<input type="checkbox" data-tema-index="' + index + '" data-subtema-index="' + subtemaIndex + '" data-etapa="' + etapa + '" ' + (estaCompletada ? 'checked' : '') + ' ' + (!puedeMarcar ? 'disabled' : '') + '>' +
+                      '<span class="checkmark"></span>' +
+                    '</div>' +
+                    '<span class="check-label-horizontal">' + etapasNombres[etapa] + '</span>' +
+                  '</label>';
+                });
+
+                subtemasHTML += `
+                  <div class="subtema-item">
+                    <div class="subtema-item-header">
+                      <span class="subtema-nombre">${subtema.nombre}</span>
+                      <div class="acciones-subtema">
+                        <button class="eliminar" data-tema-index="${index}" data-subtema-index="${subtemaIndex}">Eliminar</button>
+                      </div>
+                    </div>
+                    <div class="checklist-horizontal">
+                      ${checkboxesSubtemaHTML}
+                    </div>
+                  </div>
+                `;
+              });
+            }
+
             filaSubtema.innerHTML = `
               <td colspan="3" style="padding: 0; border: none;">
-                <div class="subtema-container \${tema.subtemasAbierto ? 'abierto' : ''}">
-                  <div class="subtema-header">
-                    <span>📝 Subtemas (\${tema.subtemas ? tema.subtemas.length : 0})</span>
+                <div class="subtema-container ${tema.subtemasAbierto ? 'abierto' : ''}">
+                  <div class="subtema-header" data-tema-index="${index}">
+                    <span> Subtemas (${tema.subtemas ? tema.subtemas.length : 0})</span>
                     <span class="subtema-flecha">▼</span>
                   </div>
                   <div class="agregar-subtema">
-                    <input type="text" id="nuevoSubtema-\${index}" placeholder="Nombre del nuevo subtema" style="padding: 8px; width: 200px; border-radius: 6px; border: 1px solid #ddd;">
-                    <button class="secondary" data-tema-index="\${index}" id="agregarSubtemaBtn-\${index}">Agregar Subtema</button>
+                    <input type="text" id="nuevoSubtema-${index}" placeholder="Nombre del nuevo subtema" style="padding: 8px; width: 200px; border-radius: 6px; border: 1px solid #ddd;">
+                    <button class="secondary" data-tema-index="${index}" id="agregarSubtemaBtn-${index}">Agregar Subtema</button>
                   </div>
-                  <div id="subtemas-container-\${index}">
-                    \${tema.subtemas ? tema.subtemas.map((subtema, subtemaIndex) => \`
-                      <div class="subtema-item">
-                        <div class="subtema-item-header">
-                          <span class="subtema-nombre">\${subtema.nombre}</span>
-                          <div class="acciones-subtema">
-                            <button class="eliminar" data-tema-index="\${index}" data-subtema-index="\${subtemaIndex}">Eliminar</button>
-                          </div>
-                        </div>
-                        <div class="checklist-horizontal">
-                          \${etapas.map((etapa, i) => {
-                            const puedeMarcar = puedeMarcarEtapa(subtema, i);
-                            const estaCompletada = subtema[etapa] || false;
-                            return \\\`<label class="check-item-horizontal \${estaCompletada ? 'completado' : ''} \${!puedeMarcar ? 'bloqueado' : ''}">
-                              <div class="checkbox-container">
-                                <input type="checkbox" data-tema-index="\${index}" data-subtema-index="\${subtemaIndex}" data-etapa="\${etapa}" \${estaCompletada ? 'checked' : ''} \${!puedeMarcar ? 'disabled' : ''}>
-                                <span class="checkmark"></span>
-                              </div>
-                              <span class="check-label-horizontal">\${etapasNombres[etapa]}</span>
-                            </label>\\\`;
-                          }).join('')}
-                        </div>
-                      </div>
-                    \`).join('') : ''}
+                  <div id="subtemas-container-${index}">
+                    ${subtemasHTML}
                   </div>
                 </div>
               </td>
             `;
+            
             tablaBody.appendChild(fila);
             tablaBody.appendChild(filaSubtema);
           });
@@ -976,6 +992,12 @@
         document.querySelectorAll('.subtema-header').forEach(header => {
           header.addEventListener('click', function() {
             this.parentElement.classList.toggle('abierto');
+            // NUEVO: Guardar en la memoria si el panel quedó abierto o cerrado para no frustrarte
+            const temaIndex = parseInt(this.getAttribute('data-tema-index'));
+            if (!isNaN(temaIndex) && temas[temaIndex]) {
+              temas[temaIndex].subtemasAbierto = this.parentElement.classList.contains('abierto');
+              localStorage.setItem(`planificador_${materiaId}`, JSON.stringify(temas));
+            }
           });
         });
 
@@ -992,6 +1014,9 @@
             const nuevoSubtema = { nombre: nombreSubtema };
             etapas.forEach(etapa => nuevoSubtema[etapa] = false);
             temas[temaIndex].subtemas.push(nuevoSubtema);
+            
+            temas[temaIndex].subtemasAbierto = true;
+            
             localStorage.setItem(`planificador_${materiaId}`, JSON.stringify(temas));
             input.value = '';
             cargarTemas(materiaId, materiaEstado);
