@@ -838,7 +838,7 @@
               <td>
                 <div class="checklist-horizontal">
                   ${etapas.map((etapa, i) => {
-                    const puedeMarcar = puedeMarcarEtapa(tema, i);
+                    const puedeMarcar = puedeMarcarEtapa(subtema, i);
                     const estaCompletada = tema[etapa];
                     return `<label class="check-item-horizontal ${estaCompletada ? 'completado' : ''} ${!puedeMarcar ? 'bloqueado' : ''}">
                       <div class="checkbox-container">
