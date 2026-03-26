@@ -131,13 +131,10 @@
       font-size: 0.85rem;
     }
 
-    .small{font-size:0.85rem;color:var(--ink-soft);font-weight: 500}
-
     .legend{display:flex;gap:10px;flex-wrap:wrap;align-items:center}
     .legend .item{display:flex;gap:8px;align-items:center;font-size:.9rem}
     .swatch{width:16px;height:12px;border-radius:4px;display:inline-block;box-shadow: inset 0 0 0 1px rgba(0,0,0,.06)}
 
-    /* --- Vistas --- */
     .view {
       display: none;
       margin-top: 18px;
@@ -192,7 +189,6 @@
     .subject.aprobada .status-indicator { background: rgba(255,255,255,0.3); }
     .subject.cursando .status-indicator { background: rgba(255,255,255,0.5); }
 
-    /* --- Planificador --- */
     .planificador-container {
       background: rgba(255,255,255,0.85);
       padding: 20px;
@@ -331,12 +327,10 @@
       transition: max-height 0.3s ease, padding 0.3s ease;
     }
     
-.subtema-container.abierto {
-  max-height: 8000px;
-  padding: 10px;
-  overflow: visible;
-}
-
+    .subtema-container.abierto {
+      max-height: 8000px;
+      padding: 10px;
+      overflow: visible;
     }
     
     .subtema-header {
@@ -471,7 +465,6 @@
   <header>
     <div>
       <h1>Medicina (UNComa)</h1>
-      <div class="small" id="viewDescription">Malla curricular · haz clic en una materia para cambiar su estado</div>
     </div>
     <div class="view-toggle">
       <button id="viewMallaBtn" class="active">Malla</button>
@@ -792,7 +785,7 @@
         return { porcentaje: Math.round((etapasCompletadas / totalEtapas) * 100), completadas: etapasCompletadas, total: totalEtapas };
       }
 
-            function sincronizarCheckboxes(temaIndex, etapa, temas, materiaId, isSubtema = false, subtemaIndex = null) {
+      function sincronizarCheckboxes(temaIndex, etapa, temas, materiaId, isSubtema = false, subtemaIndex = null) {
         const tema = temas[temaIndex];
         const etapaIndex = etapas.indexOf(etapa);
 
@@ -825,7 +818,7 @@
         localStorage.setItem(`planificador_${materiaId}`, JSON.stringify(temas));
       }
 
-            function cargarTemas(materiaId, materiaEstado) {
+      function cargarTemas(materiaId, materiaEstado) {
         const temas = JSON.parse(localStorage.getItem(`planificador_${materiaId}`) || '[]');
         const tablaBody = document.getElementById('tablaBody');
         tablaBody.innerHTML = '';
@@ -1069,7 +1062,6 @@
         showToast('Tema agregado');
       }
 
-
       function initPlanificador() {
         const select = document.getElementById('materiaSelect');
         const planificadorContenido = document.getElementById('planificadorContenido');
@@ -1177,7 +1169,6 @@
       const planificadorView = document.getElementById('planificadorView');
       const viewMallaBtn = document.getElementById('viewMallaBtn');
       const viewPlanificadorBtn = document.getElementById('viewPlanificadorBtn');
-      const viewDescription = document.getElementById('viewDescription');
 
       function setView(view) {
         if (view === 'malla') {
@@ -1185,13 +1176,11 @@
           planificadorView.classList.remove('active');
           viewMallaBtn.classList.add('active');
           viewPlanificadorBtn.classList.remove('active');
-          viewDescription.textContent = 'Malla curricular · haz clic en una materia para cambiar su estado';
         } else {
           mallaView.classList.remove('active');
           planificadorView.classList.add('active');
           viewMallaBtn.classList.remove('active');
           viewPlanificadorBtn.classList.add('active');
-          viewDescription.textContent = 'Planificador · gestiona temas y subtemas por materia';
           poblarSelectMaterias();
           
           const select = document.getElementById('materiaSelect');
