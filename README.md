@@ -792,25 +792,35 @@
         return { porcentaje: Math.round((etapasCompletadas / totalEtapas) * 100), completadas: etapasCompletadas, total: totalEtapas };
       }
 
-      function sincronizarCheckboxes(temaIndex, etapa, temas, materiaId) {
+      function sincronizarCheckboxes(temaIndex, etapa, temas, materiaId, isSubtema = false, subTemaIndez = null) {
         const tema = temas[temaIndex];
-        if (!etapa.startsWith('subtema_') && tema[etapa]) {
-          if (tema.subtemas) tema.subtemas.forEach(subtema => subtema[etapa] = true);
-        }
-        if (!etapa.startsWith('subtema_') && !tema[etapa]) {
-          if (tema.subtemas) tema.subtemas.forEach(subtema => subtema[etapa] = false);
-          const etapaIndex = etapas.indexOf(etapa);
+        const estapaIndex = etapas.indexOf(etapa);
+        if (!isSubtema) {
+          if (tema[etapa]) {
+            if (tema.subtemas) tema.subtemas.forEach(subtema => subtema[etapa] = true);
+        } else { 
+          if (tema.subtemas) tema.subtemas.forEach(subtema => subtema[etapa] = false)
           for (let i = etapaIndex + 1; i < etapas.length; i++) {
             tema[etapas[i]] = false;
             if (tema.subtemas) tema.subtemas.forEach(subtema => subtema[etapas[i]] = false);
           }
         }
-        if (etapa.startsWith('subtema_')) {
-          const etapaPrincipal = etapa.replace('subtema_', '');
-          if (tema.subtemas && tema.subtemas.length > 0) {
-            tema[etapaPrincipal] = tema.subtemas.every(subtema => subtema[etapaPrincipal]);
+      } else {
+          const subtema = tema.subtemas [subtemaIndex];
+          
+      if (!subtema[etapa]) {
+        for (let i = etapaIndex + 1; i < etapas.length; i++) {
+              subtema[etapas[i]] = false;
           }
         }
+          
+        if (tema.subtemas && tema.subtemas.length > 0) {
+            etapas.forEach(etp => {
+              tema[etp] = tema.subtemas.every(st => st[etp]);
+            });
+          }
+        }
+        
         localStorage.setItem(`planificador_${materiaId}`, JSON.stringify(temas));
       }
 
