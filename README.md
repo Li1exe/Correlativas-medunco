@@ -792,29 +792,30 @@
         return { porcentaje: Math.round((etapasCompletadas / totalEtapas) * 100), completadas: etapasCompletadas, total: totalEtapas };
       }
 
-      function sincronizarCheckboxes(temaIndex, etapa, temas, materiaId, isSubtema = false, subTemaIndez = null) {
+            function sincronizarCheckboxes(temaIndex, etapa, temas, materiaId, isSubtema = false, subtemaIndex = null) {
         const tema = temas[temaIndex];
-        const estapaIndex = etapas.indexOf(etapa);
+        const etapaIndex = etapas.indexOf(etapa);
+
         if (!isSubtema) {
           if (tema[etapa]) {
             if (tema.subtemas) tema.subtemas.forEach(subtema => subtema[etapa] = true);
-        } else { 
-          if (tema.subtemas) tema.subtemas.forEach(subtema => subtema[etapa] = false)
-          for (let i = etapaIndex + 1; i < etapas.length; i++) {
-            tema[etapas[i]] = false;
-            if (tema.subtemas) tema.subtemas.forEach(subtema => subtema[etapas[i]] = false);
+          } else {
+            if (tema.subtemas) tema.subtemas.forEach(subtema => subtema[etapa] = false);
+            for (let i = etapaIndex + 1; i < etapas.length; i++) {
+              tema[etapas[i]] = false;
+              if (tema.subtemas) tema.subtemas.forEach(subtema => subtema[etapas[i]] = false);
+            }
           }
-        }
-      } else {
-          const subtema = tema.subtemas [subtemaIndex];
+        } else {
+          const subtema = tema.subtemas[subtemaIndex];
           
-      if (!subtema[etapa]) {
-        for (let i = etapaIndex + 1; i < etapas.length; i++) {
+          if (!subtema[etapa]) {
+            for (let i = etapaIndex + 1; i < etapas.length; i++) {
               subtema[etapas[i]] = false;
+            }
           }
-        }
-          
-        if (tema.subtemas && tema.subtemas.length > 0) {
+
+          if (tema.subtemas && tema.subtemas.length > 0) {
             etapas.forEach(etp => {
               tema[etp] = tema.subtemas.every(st => st[etp]);
             });
@@ -823,6 +824,7 @@
         
         localStorage.setItem(`planificador_${materiaId}`, JSON.stringify(temas));
       }
+
 
       function cargarTemas(materiaId, materiaEstado) {
         const temas = JSON.parse(localStorage.getItem(`planificador_${materiaId}`) || '[]');
@@ -848,7 +850,7 @@
               <td>
                 <div class="checklist-horizontal">
                   ${etapas.map((etapa, i) => {
-                    const puedeMarcar = puedeMarcarEtapa(subtema, i);
+                    const puedeMarcar = puedeMarcarEtapa(tema, i);
                     const estaCompletada = tema[etapa];
                     return `<label class="check-item-horizontal ${estaCompletada ? 'completado' : ''} ${!puedeMarcar ? 'bloqueado' : ''}">
                       <div class="checkbox-container">
@@ -886,7 +888,7 @@
                         </div>
                         <div class="checklist-horizontal">
                           ${etapas.map((etapa, i) => {
-                            const puedeMarcar = puedeMarcarEtapa(tema, i);
+                            const puedeMarcar = puedeMarcarEtapa(subtema, i);
                             const estaCompletada = subtema[etapa] || false;
                             return `<label class="check-item-horizontal ${estaCompletada ? 'completado' : ''} ${!puedeMarcar ? 'bloqueado' : ''}">
                               <div class="checkbox-container">
@@ -926,19 +928,37 @@
             });
           }
         });
+                document.querySelectorAll('input[type="checkbox"][data-etapa]').forEach(checkbox => {
+          if (!checkbox.hasAttribute('data-subtema-index')) {
+            checkbox.addEventListener('change', function() {
+              const temaIndex = parseInt(this.getAttribute('data-tema-index'));
+              const etapa = this.getAttribute('data-etapa');
+              temas[temaIndex][etapa] = this.checked;
+              
+              sincronizarCheckboxes(temaIndex, etapa, temas, materiaId, false);
+              
+              cargarTemas(materiaId, materiaEstado);
+              showToast('Progreso actualizado');
+            });
+          }
+        });
         document.querySelectorAll('input[type="checkbox"][data-etapa][data-subtema-index]').forEach(checkbox => {
           checkbox.addEventListener('change', function() {
             const temaIndex = parseInt(this.getAttribute('data-tema-index'));
             const subtemaIndex = parseInt(this.getAttribute('data-subtema-index'));
             const etapa = this.getAttribute('data-etapa');
+            
             if (temas[temaIndex].subtemas && temas[temaIndex].subtemas[subtemaIndex]) {
               temas[temaIndex].subtemas[subtemaIndex][etapa] = this.checked;
-              sincronizarCheckboxes(temaIndex, etapa, temas, materiaId);
-              mostrarEstadisticas(materiaId);
+              
+              sincronizarCheckboxes(temaIndex, etapa, temas, materiaId, true, subtemaIndex);
+              
+              cargarTemas(materiaId, materiaEstado);
               showToast('Progreso del subtema actualizado');
             }
           });
         });
+
         document.querySelectorAll('button.eliminar[data-tema-index]').forEach(button => {
           if (!button.hasAttribute('data-subtema-index')) {
             button.addEventListener('click', function() {
