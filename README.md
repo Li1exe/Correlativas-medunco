@@ -825,7 +825,7 @@
         localStorage.setItem(`planificador_${materiaId}`, JSON.stringify(temas));
       }
 
-      function cargarTemas(materiaId, materiaEstado) {
+            function cargarTemas(materiaId, materiaEstado) {
         const temas = JSON.parse(localStorage.getItem(`planificador_${materiaId}`) || '[]');
         const tablaBody = document.getElementById('tablaBody');
         tablaBody.innerHTML = '';
@@ -854,8 +854,8 @@
 
             fila.innerHTML = `
               <td>
-                <div style="display: flex; align-items: center;">
-                  <strong>${tema.nombre}</strong>
+                <div class="tema-titulo-toggle" data-tema-index="${index}" style="display: flex; align-items: center; cursor: pointer; user-select: none;" title="Tocar para expandir/colapsar subtemas">
+                  <strong style="color: var(--ink-soft); font-size: 1.05rem; border-bottom: 1px dashed var(--habilitada); padding-bottom: 2px;">${tema.nombre}</strong>
                   ${todasCompletadas ? '<span class="completado-icono"></span>' : ''}
                 </div>
                 <div class="progreso-tema">Progreso: ${progreso.completadas}/${progreso.total} (${progreso.porcentaje}%)</div>
@@ -904,7 +904,7 @@
 
             filaSubtema.innerHTML = `
               <td colspan="3" style="padding: 0; border: none;">
-                <div class="subtema-container ${tema.subtemasAbierto ? 'abierto' : ''}">
+                <div class="subtema-container ${tema.subtemasAbierto ? 'abierto' : ''}" id="caja-subtemas-${index}">
                   <div class="subtema-header" data-tema-index="${index}">
                     <span>📝 Subtemas (${tema.subtemas ? tema.subtemas.length : 0})</span>
                     <span class="subtema-flecha">▼</span>
@@ -989,97 +989,15 @@
           });
         });
 
-        document.querySelectorAll('.subtema-header').forEach(header => {
-          header.addEventListener('click', function() {
-            this.parentElement.classList.toggle('abierto');
+        document.querySelectorAll('.tema-titulo-toggle').forEach(titulo => {
+          titulo.addEventListener('click', function() {
             const temaIndex = parseInt(this.getAttribute('data-tema-index'));
-            if (!isNaN(temaIndex) && temas[temaIndex]) {
-              temas[temaIndex].subtemasAbierto = this.parentElement.classList.contains('abierto');
-              localStorage.setItem(`planificador_${materiaId}`, JSON.stringify(temas));
-            }
-          });
-        });
-
-        document.querySelectorAll('button[id^="agregarSubtemaBtn-"]').forEach(button => {
-          button.addEventListener('click', function() {
-            const temaIndex = parseInt(this.getAttribute('data-tema-index'));
-            const input = document.getElementById(`nuevoSubtema-${temaIndex}`);
-            const nombreSubtema = input.value.trim();
-            if (nombreSubtema === '') {
-              showToast('Ingresa un nombre para el subtema');
-              return;
-            }
-            if (!temas[temaIndex].subtemas) temas[temaIndex].subtemas = [];
-            const nuevoSubtema = { nombre: nombreSubtema };
-            etapas.forEach(etapa => nuevoSubtema[etapa] = false);
-            temas[temaIndex].subtemas.push(nuevoSubtema);
-            
-            temas[temaIndex].subtemasAbierto = true;
-            
-            localStorage.setItem(`planificador_${materiaId}`, JSON.stringify(temas));
-            input.value = '';
-            cargarTemas(materiaId, materiaEstado);
-            showToast('Subtema agregado');
-          });
-        });
-      }
-
-
-      function agregarEventosPlanificador(materiaId, temas, materiaEstado) {
-        if (materiaEstado === STATES.LOCKED) return;
-        
-        document.querySelectorAll('input[type="checkbox"][data-etapa]').forEach(checkbox => {
-          if (!checkbox.hasAttribute('data-subtema-index')) {
-            checkbox.addEventListener('change', function() {
-              const temaIndex = parseInt(this.getAttribute('data-tema-index'));
-              const etapa = this.getAttribute('data-etapa');
-              temas[temaIndex][etapa] = this.checked;
-              sincronizarCheckboxes(temaIndex, etapa, temas, materiaId, false);
-              cargarTemas(materiaId, materiaEstado);
-              showToast('Progreso actualizado');
-            });
-          }
-        });
-
-        document.querySelectorAll('input[type="checkbox"][data-etapa][data-subtema-index]').forEach(checkbox => {
-          checkbox.addEventListener('change', function() {
-            const temaIndex = parseInt(this.getAttribute('data-tema-index'));
-            const subtemaIndex = parseInt(this.getAttribute('data-subtema-index'));
-            const etapa = this.getAttribute('data-etapa');
-            
-            if (temas[temaIndex].subtemas && temas[temaIndex].subtemas[subtemaIndex]) {
-              temas[temaIndex].subtemas[subtemaIndex][etapa] = this.checked;
-              sincronizarCheckboxes(temaIndex, etapa, temas, materiaId, true, subtemaIndex);
-              cargarTemas(materiaId, materiaEstado);
-              showToast('Progreso del subtema actualizado');
-            }
-          });
-        });
-
-        document.querySelectorAll('button.eliminar[data-tema-index]').forEach(button => {
-          if (!button.hasAttribute('data-subtema-index')) {
-            button.addEventListener('click', function() {
-              const temaIndex = parseInt(this.getAttribute('data-tema-index'));
-              if (confirm('¿Eliminar este tema y todos sus subtemas?')) {
-                temas.splice(temaIndex, 1);
+            const contenedor = document.getElementById(`caja-subtemas-${temaIndex}`);
+            if (contenedor) {
+              contenedor.classList.toggle('abierto');
+              if (!isNaN(temaIndex) && temas[temaIndex]) {
+                temas[temaIndex].subtemasAbierto = contenedor.classList.contains('abierto');
                 localStorage.setItem(`planificador_${materiaId}`, JSON.stringify(temas));
-                cargarTemas(materiaId, materiaEstado);
-                showToast('Tema eliminado');
-              }
-            });
-          }
-        });
-
-        document.querySelectorAll('button.eliminar[data-subtema-index]').forEach(button => {
-          button.addEventListener('click', function() {
-            const temaIndex = parseInt(this.getAttribute('data-tema-index'));
-            const subtemaIndex = parseInt(this.getAttribute('data-subtema-index'));
-            if (confirm('¿Eliminar este subtema?')) {
-              if (temas[temaIndex].subtemas) {
-                temas[temaIndex].subtemas.splice(subtemaIndex, 1);
-                localStorage.setItem(`planificador_${materiaId}`, JSON.stringify(temas));
-                cargarTemas(materiaId, materiaEstado);
-                showToast('Subtema eliminado');
               }
             }
           });
@@ -1088,7 +1006,6 @@
         document.querySelectorAll('.subtema-header').forEach(header => {
           header.addEventListener('click', function() {
             this.parentElement.classList.toggle('abierto');
-            // NUEVO: Guardar en la memoria si el panel quedó abierto o cerrado para no frustrarte
             const temaIndex = parseInt(this.getAttribute('data-tema-index'));
             if (!isNaN(temaIndex) && temas[temaIndex]) {
               temas[temaIndex].subtemasAbierto = this.parentElement.classList.contains('abierto');
