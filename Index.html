@@ -507,8 +507,6 @@
           <button id="agregarTema">+ Agregar Tema</button>
           <button id="expandirTodo" class="secondary">Expandir Todo</button>
           <button id="colapsarTodo" class="secondary">Colapsar Todo</button>
-          <button id="exportarJson" class="secondary">Exportar JSON</button>
-          <button id="importarJson" class="secondary">Importar JSON</button>
         </div>
         
         <table id="tablaSeguimiento">
@@ -741,7 +739,7 @@
             else map[s.id].state = STATES.LOCKED;
           }
         });
-        // Recalcular locks (simplificado, no modificamos el original)
+        
         return map;
       }
 
